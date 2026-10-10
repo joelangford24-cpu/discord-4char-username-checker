@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discord 4-Character Username Checker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            text-align: center;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #666;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .menu-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+
+        button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            background: #667eea;
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .section {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        input[type="text"],
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 14px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+        }
+
+        .btn-back {
+            background: #999;
+            font-size: 14px;
+            padding: 10px 16px;
+            margin-top: 10px;
+        }
+
+        .btn-back:hover {
+            background: #777;
+        }
+
+        .results {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .results.active {
+            display: block;
+        }
+
+        .results h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .result-category {
+            margin-bottom: 20px;
+        }
+
+        .result-category h4 {
+            color: #667eea;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .result-list {
+            list-style: none;
+        }
+
+        .result-item {
+            padding: 8px 12px;
+            background: white;
+            margin-bottom: 6px;
+            border-radius: 6px;
+            font-size: 14px;
+            border-left: 4px solid #667eea;
+        }
+
+        .result-item.available {
+            border-left-color: #4caf50;
+            color: #2e7d32;
+        }
+
+        .result-item.taken {
+            border-left-color: #f44336;
+            color: #c62828;
+        }
+
+        .result-item.invalid {
+            border-left-color: #ff9800;
+            color: #e65100;
+        }
+
+        .loading {
+            text-align: center;
+            color: #667eea;
+            font-size: 14px;
+            margin-top: 15px;
+        }
+
+        .spinner {
+            border: 3px solid #f0f0f0;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 10px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .stat-box {
+            padding: 12px;
+            background: white;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 24px;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #999;
+            text-transform: uppercase;
+            margin-top: 4px;
+        }
+
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+
+        .info {
+            background: #e3f2fd;
+            color: #1565c0;
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 15px;
+            font-size: 13px;
+        }
+
+        .copy-btn {
+            background: #4caf50;
+            padding: 8px 12px;
+            font-size: 12px;
+            margin-left: 8px;
+        }
+
+        .copy-btn:hover {
+            background: #388e3c;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎮 Discord Username Checker</h1>
+        <p class="subtitle">Check 4-character username availability</p>
+
+        <!-- Menu -->
+        <div id="menu" class="section active">
+            <div class="menu-buttons">
+                <button onclick="showSection('single')">Check Single</button>
+                <button onclick="showSection('multiple')">Check Multiple</button>
+                <button onclick="showSection('generate')">Generate 4-Char</button>
+                <button onclick="showSection('info')">Info</button>
+            </div>
+        </div>
+
+        <!-- Single Username Check -->
+        <div id="single" class="section">
+            <div class="input-group">
+                <label for="singleUsername">Enter Username:</label>
+                <input type="text" id="singleUsername" placeholder="e.g., test">
+            </div>
+            <button class="btn-primary" onclick="checkSingleUsername()">Check Username</button>
+            <button class="btn-back" onclick="showSection('menu')">← Back to Menu</button>
+            <div id="singleResults" class="results"></div>
+        </div>
+
+        <!-- Multiple Usernames Check -->
+        <div id="multiple" class="section">
+            <div class="input-group">
+                <label for="multipleUsernames">Enter Usernames (comma-separated):</label>
+                <textarea id="multipleUsernames" placeholder="e.g., test1, test2, test3"></textarea>
+            </div>
+            <button class="btn-primary" onclick="checkMultipleUsernames()">Check All</button>
+            <button class="btn-back" onclick="showSection('menu')">← Back to Menu</button>
+            <div id="multipleResults" class="results"></div>
+        </div>
+
+        <!-- Generate 4-Character Combinations -->
+        <div id="generate" class="section">
+            <div class="input-group">
+                <label>Generate 4-Character Combinations</label>
+                <p class="info">
+                    This will generate combinations like "aaaa", "aaab", etc.
+                    You can then check them in the "Check Multiple" section.
+                </p>
+            </div>
+            <div class="input-group">
+                <label for="limit">How many to generate (max 5000)?</label>
+                <input type="text" id="limit" placeholder="1000" value="1000">
+            </div>
+            <button class="btn-primary" onclick="generateCombinations()">Generate</button>
+            <button class="btn-back" onclick="showSection('menu')">← Back to Menu</button>
+            <div id="generateResults" class="results"></div>
+        </div>
+
+        <!-- Info -->
+        <div id="info" class="section">
+            <div class="input-group">
+                <h3>ℹ️ About This Tool</h3>
+                <p class="info">
+                    <strong>What it does:</strong><br>
+                    This tool validates Discord username format and helps you check if 4-character usernames are available.
+                </p>
+                <p class="info">
+                    <strong>Username Rules:</strong><br>
+                    • 2-32 characters long<br>
+                    • Letters (a-z), numbers (0-9), and underscore (_) only<br>
+                    • No spaces or special characters<br>
+                </p>
+                <p class="info">
+                    <strong>Features:</strong><br>
+                    • Check single usernames<br>
+                    • Batch check multiple usernames<br>
+                    • Generate 4-character combinations<br>
+                    • Works entirely in your browser<br>
+                </p>
+                <p class="error">
+                    <strong>⚠️ Important:</strong> Discord does not provide a public API for bulk username availability checks. This tool primarily validates format. For accurate availability, use Discord directly.
+                </p>
+            </div>
+            <button class="btn-back" onclick="showSection('menu')">← Back to Menu</button>
+        </div>
+    </div>
+
+    <script>
+        function showSection(sectionName) {
+            document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
+            document.getElementById(sectionName).classList.add('active');
+        }
+
+        function isValidUsername(username) {
+            if (typeof username !== 'string') return false;
+            username = username.trim();
+            if (username.length < 2 || username.length > 32) return false;
+            return /^[A-Za-z0-9_]{2,32}$/.test(username);
+        }
+
+        function checkSingleUsername() {
+            const input = document.getElementById('singleUsername').value.trim();
+            const resultsDiv = document.getElementById('singleResults');
+
+            if (!input) {
+                resultsDiv.innerHTML = '<div class="error">Please enter a username</div>';
+                resultsDiv.classList.add('active');
+                return;
+            }
+
+            const valid = isValidUsername(input);
+            let html = '<h3>Result</h3>';
+
+            if (valid) {
+                html += `
+                    <div class="result-item available">
+                        ✅ <strong>${input}</strong> - Valid format
+                    </div>
+                    <p class="info">This username follows Discord's naming rules. Check availability on Discord directly.</p>
+                `;
+            } else {
+                html += `
+                    <div class="result-item invalid">
+                        ❌ <strong>${input}</strong> - Invalid format
+                    </div>
+                    <p class="error">Must be 2-32 characters with only letters, numbers, and underscore.</p>
+                `;
+            }
+
+            resultsDiv.innerHTML = html;
+            resultsDiv.classList.add('active');
+        }
+
+        function checkMultipleUsernames() {
+            const input = document.getElementById('multipleUsernames').value;
+            const resultsDiv = document.getElementById('multipleResults');
+
+            if (!input.trim()) {
+                resultsDiv.innerHTML = '<div class="error">Please enter at least one username</div>';
+                resultsDiv.classList.add('active');
+                return;
+            }
+
+            const usernames = input.split(',').map(u => u.trim()).filter(u => u);
+            const valid = [];
+            const invalid = [];
+
+            usernames.forEach(username => {
+                if (isValidUsername(username)) {
+                    valid.push(username);
+                } else {
+                    invalid.push(username);
+                }
+            });
+
+            let html = '<h3>Results</h3>';
+            html += `
+                <div class="stats">
+                    <div class="stat-box">
+                        <div class="stat-number">${usernames.length}</div>
+                        <div class="stat-label">Total</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-number" style="color: #4caf50">${valid.length}</div>
+                        <div class="stat-label">Valid</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-number" style="color: #f44336">${invalid.length}</div>
+                        <div class="stat-label">Invalid</div>
+                    </div>
+                </div>
+            `;
+
+            if (valid.length > 0) {
+                html += '<div class="result-category"><h4>✅ Valid Usernames</h4><ul class="result-list">';
+                valid.forEach(u => {
+                    html += `<li class="result-item available">${u}</li>`;
+                });
+                html += '</ul></div>';
+            }
+
+            if (invalid.length > 0) {
+                html += '<div class="result-category"><h4>❌ Invalid Usernames</h4><ul class="result-list">';
+                invalid.forEach(u => {
+                    html += `<li class="result-item invalid">${u}</li>`;
+                });
+                html += '</ul></div>';
+            }
+
+            if (valid.length > 0) {
+                html += '<p class="info">Valid usernames follow Discord naming rules. Check actual availability on Discord directly.</p>';
+            }
+
+            resultsDiv.innerHTML = html;
+            resultsDiv.classList.add('active');
+        }
+
+        function generateCombinations() {
+            const limitInput = document.getElementById('limit').value;
+            const limit = Math.min(parseInt(limitInput) || 1000, 5000);
+            const resultsDiv = document.getElementById('generateResults');
+
+            resultsDiv.innerHTML = '<div class="loading"><div class="spinner"></div>Generating combinations...</div>';
+            resultsDiv.classList.add('active');
+
+            // Use setTimeout to allow UI to update
+            setTimeout(() => {
+                const chars = 'abcdefghijklmnopqrstuvwxyz0123456789_'.split('');
+                const combos = [];
+                let count = 0;
+
+                for (let a of chars) {
+                    for (let b of chars) {
+                        for (let c of chars) {
+                            for (let d of chars) {
+                                combos.push(a + b + c + d);
+                                count++;
+                                if (count >= limit) break;
+                            }
+                            if (count >= limit) break;
+                        }
+                        if (count >= limit) break;
+                    }
+                    if (count >= limit) break;
+                }
+
+                let html = '<h3>Generated Combinations</h3>';
+                html += `
+                    <div class="stats">
+                        <div class="stat-box">
+                            <div class="stat-number">${combos.length}</div>
+                            <div class="stat-label">Generated</div>
+                        </div>
+                    </div>
+                `;
+
+                const comboText = combos.join(', ');
+                html += '<div class="input-group"><textarea readonly style="max-height: 200px">' + comboText + '</textarea></div>';
+                html += `
+                    <button class="copy-btn" onclick="navigator.clipboard.writeText(\`${comboText}\`).then(() => alert('Copied to clipboard!'))">
+                        📋 Copy All
+                    </button>
+                `;
+                html += '<p class="info">Copy these usernames and paste them into the "Check Multiple" section to validate them.</p>';
+
+                resultsDiv.innerHTML = html;
+            }, 100);
+        }
+    </script>
+</body>
+</html>
